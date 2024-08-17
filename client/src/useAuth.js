@@ -7,6 +7,12 @@ export default function useAuth(code) {
   const [expiresIn, setExpiresIn] = useState()
 
   useEffect(() => {
+    if (!code) {
+      console.error("Invalid code:", code);
+      return;
+    }
+
+    console.log("useEffect triggered with code:", code);
     axios
       .post("http://localhost:3001/login", {
         code,
@@ -17,10 +23,10 @@ export default function useAuth(code) {
         setExpiresIn(res.data.expiresIn)
         window.history.pushState({}, null, "/")
       })
-      .catch(() => {
-        window.location = "/"
-      })
-  }, [code])
+      .catch(err => {
+        console.error("Error during /login request:", err);
+      });
+  }, [code]);
 
   useEffect(() => {
     if (!refreshToken || !expiresIn) return

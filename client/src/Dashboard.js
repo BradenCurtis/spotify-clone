@@ -40,8 +40,13 @@ export default function Dashboard({ code }) {
   function fetchLyrics(track) {
     if (!track) return;
 
+    if (track.artist) {
+      track.artists = track.artist;
+      track.name = track.title;
+    }
+
     console.log("Fetching lyrics for:", track.name, "by", track.artists);
-    console.log("Format for lyrics fetch:", track);
+    console.log("Format for lyrics fetch:", track); 
 
     axios
       .get("http://localhost:3001/lyrics", {
@@ -102,10 +107,8 @@ export default function Dashboard({ code }) {
 
   // Function to handle track changes in Player
   function handleTrackChange(track) {
-    // Check if track and track.artists exist and are in the expected format
     console.log("Track changed:", track);
-    
-
+  
     if (track) {
       console.log("Setting playing track:", track);
       setPlayingTrack(track);

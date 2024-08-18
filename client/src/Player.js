@@ -11,16 +11,12 @@ export default function Player({ accessToken, trackUri, onTrackChange }) {
     }
   }, [trackUri]);
 
-  // Notify parent about track changes
+  // Called whenever the player state changes
   const handleCallback = (state) => {
     console.log("Player state:", state); // Debug log
     if (state.isPlaying && state.track) {
-      console.log("Currently playing:", state.track); // Debug log
-      // Ensure that state.track is in the expected format
-      //if (onTrackChange && state.track && Array.isArray(state.track.artists)) {
-        console.log("Calling onTrackChange with track:", state.track);
-        onTrackChange(state.track);
-      //}
+      console.log("Calling onTrackChange with track:", state.track);
+      onTrackChange(state.track);
     }
     if (!state.isPlaying && state.track) {
       setPlay(false);

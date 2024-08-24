@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import useAuth from "./useAuth";
 import Player from "./Player";
 import TrackSearchResult from "./TrackSearchResult";
-import { Container, Form } from "react-bootstrap";
+import Queue from "./Queue"; // Import the new Queue component
+import { Container, Form, Row, Col } from "react-bootstrap";
 import SpotifyWebApi from "spotify-web-api-node";
 import axios from "axios";
 
 const spotifyApi = new SpotifyWebApi({
-  clientId: "4da3c667dca548818e6801d5a2bdf435",
+  clientId: "062f8ada18c34c9ebfb735cbdb9aea0a",
 });
 
 export default function Dashboard({ code }) {
@@ -16,6 +17,7 @@ export default function Dashboard({ code }) {
   const [searchResults, setSearchResults] = useState([]);
   const [playingTrack, setPlayingTrack] = useState();
   const [lyrics, setLyrics] = useState("");
+  const [queue, setQueue] = useState([]); // Add state for queue
 
   function chooseTrack(track) {
     setPlayingTrack(track);
@@ -31,6 +33,7 @@ export default function Dashboard({ code }) {
       })
       .then((response) => {
         console.log("Track added to queue successfully", response.data);
+        setQueue((prevQueue) => [...prevQueue, track]); // Update queue state
       })
       .catch((error) => {
         console.error("Error adding track to queue", error);
@@ -46,7 +49,6 @@ export default function Dashboard({ code }) {
     }
 
     console.log("Fetching lyrics for:", track.name, "by", track.artists);
-    console.log("Format for lyrics fetch:", track); 
 
     axios
       .get("http://localhost:3001/lyrics", {
@@ -105,12 +107,17 @@ export default function Dashboard({ code }) {
     return () => (cancel = true);
   }, [search, accessToken]);
 
-  // Function to handle track changes in Player
   function handleTrackChange(track) {
     console.log("Track changed:", track);
-  
+
     if (track) {
       console.log("Setting playing track:", track);
+
+      // Remove the currently playing track from the queue
+      setQueue((prevQueue) =>
+        prevQueue.filter((queuedTrack) => queuedTrack.uri !== track.uri)
+      );
+
       setPlayingTrack(track);
     } else {
       console.error("Invalid track data:", track);
@@ -118,31 +125,65 @@ export default function Dashboard({ code }) {
   }
 
   return (
-    <Container className="d-flex flex-column py-2" style={{ height: "100vh" }}>
-      <Form.Control
-        type="search"
-        placeholder="Search Songs/Artists"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
-      <div className="flex-grow-1 my-2" style={{ overflowY: "auto" }}>
-        {searchResults.map((track) => (
-          <TrackSearchResult
-            track={track}
-            key={track.uri}
-            chooseTrack={chooseTrack}
-            addToQueue={addToQueue} // Pass addToQueue as a prop
+    <Container fluid className="d-flex flex-column vh-100">
+      {/* Search Bar */}
+      <Row style={{ marginTop: "10px" }}>
+        <Col>
+          <Form.Control
+            type="search"
+            placeholder="Search Songs/Artists"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-100"
           />
-        ))}
-        {searchResults.length === 0 && (
-          <div className="text-center" style={{ whiteSpace: "pre" }}>
-            {lyrics}
-          </div>
+        </Col>
+      </Row>
+
+      {/* Middle Section */}
+      <Row className="flex-grow-1 my-2">
+        {searchResults.length === 0 ? (
+          <>
+            <Col
+              md={8}
+              className="lyrics-section"
+              style={{
+                maxHeight: "calc(100vh - 160px)",
+                overflowY: "auto",
+              }}
+            >
+              <div className="text-center" style={{ whiteSpace: "pre" }}>
+                {lyrics}
+              </div>
+            </Col>
+            <Col md={4} className="queue-section" style={{ overflowY: "auto" }}>
+              <Queue queue={queue} />
+            </Col>
+          </>
+        ) : (
+          <Col className="search-results-section" style={{ overflowY: "auto" }}>
+            {searchResults.map((track) => (
+              <TrackSearchResult
+                track={track}
+                key={track.uri}
+                chooseTrack={chooseTrack}
+                addToQueue={addToQueue}
+              />
+            ))}
+          </Col>
         )}
-      </div>
-      <div>
-        <Player accessToken={accessToken} trackUri={playingTrack?.uri} onTrackChange={handleTrackChange} />
-      </div>
+      </Row>
+
+      {/* Player */}
+      <Row>
+        <Col>
+          <Player
+            accessToken={accessToken}
+            trackUri={playingTrack?.uri}
+            onTrackChange={handleTrackChange}
+            className="w-100"
+          />
+        </Col>
+      </Row>
     </Container>
   );
 }

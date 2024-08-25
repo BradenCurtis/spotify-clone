@@ -11,22 +11,22 @@ export default function useAuth(code) {
       console.error("Invalid code:", code);
       return;
     }
-
-    console.log("useEffect triggered with code:", code);
+  
+    console.log("Sending code to server:", code);
     axios
-      .post("http://localhost:3001/login", {
-        code,
-      })
+      .post("http://localhost:3001/login", { code })
       .then(res => {
-        setAccessToken(res.data.accessToken)
-        setRefreshToken(res.data.refreshToken)
-        setExpiresIn(res.data.expiresIn)
-        window.history.pushState({}, null, "/")
+        console.log("Login response data:", res.data);
+        setAccessToken(res.data.accessToken);
+        setRefreshToken(res.data.refreshToken);
+        setExpiresIn(res.data.expiresIn);
+        //window.history.pushState({}, null, "/");
       })
       .catch(err => {
-        console.error("Error during /login request:", err);
+        console.error("Error during /login request:", err.response || err.message || err);
       });
   }, [code]);
+  
 
   useEffect(() => {
     if (!refreshToken || !expiresIn) return

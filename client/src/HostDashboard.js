@@ -6,18 +6,27 @@ import Queue from "./Queue"; // Import the new Queue component
 import { Container, Form, Row, Col } from "react-bootstrap";
 import SpotifyWebApi from "spotify-web-api-node";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const spotifyApi = new SpotifyWebApi({
   clientId: "062f8ada18c34c9ebfb735cbdb9aea0a",
 });
 
-export default function Dashboard({ code }) {
+export default function HostDashboard({ code }) {
+  const navigate = useNavigate();
   const accessToken = useAuth(code);
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [playingTrack, setPlayingTrack] = useState();
   const [lyrics, setLyrics] = useState("");
   const [queue, setQueue] = useState([]); // Add state for queue
+
+  useEffect(() => {
+    if (!code) {
+      alert("You are not logged in. Redirecting to the login page.");
+      navigate("/");
+    }
+  }, [code, navigate]);
 
   function chooseTrack(track) {
     setPlayingTrack(track);

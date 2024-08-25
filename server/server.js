@@ -45,19 +45,15 @@ app.post("/refresh", (req, res) => {
 
 app.post("/login", (req, res) => {
   const code = req.body.code;
-  // console.log('Client ID:', process.env.CLIENT_ID);
-  // console.log('Client Secret:', process.env.CLIENT_SECRET);
-  // console.log('Redirect URI:', process.env.REDIRECT_URI);
-  console.log("sending login code:", code);
-  // const spotifyApi = new SpotifyWebApi({
-  //   redirectUri: process.env.REDIRECT_URI,
-  //   clientId: process.env.CLIENT_ID,
-  //   clientSecret: process.env.CLIENT_SECRET,
-  // });
+  console.log("Received login code:", code);
+ /*  console.log("Client ID:", process.env.CLIENT_ID);
+  console.log("Client Secret:", process.env.CLIENT_SECRET);
+  console.log("Redirect URI:", process.env.REDIRECT_URI); */
 
   spotifyApi
     .authorizationCodeGrant(code)
     .then(data => {
+      console.log("Spotify API response:", data.body);
       res.json({
         accessToken: data.body.access_token,
         refreshToken: data.body.refresh_token,
@@ -69,6 +65,7 @@ app.post("/login", (req, res) => {
       res.sendStatus(400);
     });
 });
+
 
 app.get("/lyrics", async (req, res) => {
   const options = {
